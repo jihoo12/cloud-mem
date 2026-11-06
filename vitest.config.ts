@@ -10,7 +10,8 @@ export default defineConfig(async () => ({
       wrangler: { configPath: "./wrangler.jsonc" },
       miniflare: {
         bindings: {
-          AUTH_TOKEN: "test-token",
+          GITHUB_CLIENT_ID: "test-client-id",
+          GITHUB_CLIENT_SECRET: "test-client-secret",
           TEST_MIGRATIONS: await readD1Migrations("./migrations"),
         },
       },

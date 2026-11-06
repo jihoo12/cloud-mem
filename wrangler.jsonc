@@ -5,11 +5,18 @@
   "compatibility_date": "2026-10-20",
   "compatibility_flags": ["nodejs_compat"],
   "observability": { "enabled": true },
+  "vars": {
+    // Issued tokens are only valid for this origin.
+    "PUBLIC_ORIGIN": "https://cloud-mem.jihoo12.workers.dev",
+    // The only GitHub account allowed to sign in (jihoo12).
+    "GITHUB_ALLOWED_USER_ID": "134384139"
+  },
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "cloud-mem",
       "migrations_dir": "migrations"
     }
-  ]
+  ],
+  "kv_namespaces": [{ "binding": "OAUTH_KV" }]
 }

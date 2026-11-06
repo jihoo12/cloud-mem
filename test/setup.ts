@@ -9,7 +9,9 @@ declare global {
     }
     interface Env {
       DB: D1Database;
-      AUTH_TOKEN: string;
+      OAUTH_KV: KVNamespace;
+      GITHUB_ALLOWED_USER_ID: string;
+      PUBLIC_ORIGIN: string;
       TEST_MIGRATIONS: D1Migration[];
     }
   }

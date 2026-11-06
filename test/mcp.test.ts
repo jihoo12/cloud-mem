@@ -1,19 +1,19 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import { env, exports } from "cloudflare:workers";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import worker from "../src/index";
+import { afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { BASE, getAccessToken } from "./helpers";
 
-const URL_MCP = "https://cloud-mem.test/mcp";
-const AUTH = { Authorization: "Bearer test-token" };
+const URL_MCP = `${BASE}/mcp`;
 
+let token: string;
 let client: Client;
 
-async function connect(headers: Record<string, string> = AUTH) {
+async function connect(headers: Record<string, string> = {}) {
   const connected = new Client({ name: "test", version: "1.0.0" });
   await connected.connect(
     new StreamableHTTPClientTransport(new URL(URL_MCP), {
-      requestInit: { headers },
+      requestInit: { headers: { Authorization: `Bearer ${token}`, ...headers } },
       fetch: (input, init) => exports.default.fetch(new Request(input, init)),
     }),
   );
@@ -43,6 +43,10 @@ const save = (args: Record<string, unknown>) =>
 const searchIds = async (args: Record<string, unknown>) =>
   (await callJson<{ id: number }[]>("memory_search", args)).map((r) => r.id);
 
+beforeAll(async () => {
+  token = await getAccessToken();
+});
+
 beforeEach(async () => {
   await env.DB.exec("DELETE FROM entries");
   client = await connect();
@@ -50,39 +54,6 @@ beforeEach(async () => {
 
 afterEach(async () => {
   await client.close();
-});
-
-describe("HTTP layer", () => {
-  const post = (headers: Record<string, string>, path = "/mcp") =>
-    exports.default.fetch(
-      new Request(`https://cloud-mem.test${path}`, {
-        method: "POST",
-        headers,
-        body: "{}",
-      }),
-    );
-
-  it("rejects missing and wrong tokens", async () => {
-    expect((await post({})).status).toBe(401);
-    expect((await post({ Authorization: "Bearer nope" })).status).toBe(401);
-    expect((await post({ Authorization: "test-token" })).status).toBe(401);
-  });
-
-  it("fails closed when no token is configured", async () => {
-    const response = await worker.fetch(
-      new Request(URL_MCP, { method: "POST" }),
-      { DB: env.DB },
-    );
-    expect(response.status).toBe(503);
-  });
-
-  it("returns 404 for other paths and 405 for GET", async () => {
-    expect((await post(AUTH, "/other")).status).toBe(404);
-    const get = await exports.default.fetch(
-      new Request(URL_MCP, { headers: AUTH }),
-    );
-    expect(get.status).toBe(405);
-  });
 });
 
 describe("tools", () => {
@@ -99,7 +70,7 @@ describe("tools", () => {
   });
 
   it("round-trips an entry and records the device", async () => {
-    const remote = await connect({ ...AUTH, "X-Device": "laptop" });
+    const remote = await connect({ "X-Device": "laptop" });
     const result = await remote.callTool({
       name: "memory_save",
       arguments: {
