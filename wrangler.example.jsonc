@@ -1,0 +1,25 @@
+// Copy this file to wrangler.jsonc (which git ignores) and fill in your values.
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "cloud-mem",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-20",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+  "vars": {
+    // Your Worker's URL, without a trailing slash. Issued tokens are only valid here.
+    "PUBLIC_ORIGIN": "https://cloud-mem.YOUR-SUBDOMAIN.workers.dev",
+    // The only GitHub account allowed to sign in, as a numeric id. To find yours:
+    // curl -s https://api.github.com/users/YOUR-LOGIN | grep '"id"' | head -1
+    "GITHUB_ALLOWED_USER_ID": "YOUR-GITHUB-USER-ID"
+  },
+  // Wrangler creates the database and the KV namespace on the first deploy.
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "cloud-mem",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "kv_namespaces": [{ "binding": "OAUTH_KV" }]
+}

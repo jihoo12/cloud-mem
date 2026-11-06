@@ -6,7 +6,7 @@ export const REDIRECT_URI = "http://localhost:9999/callback";
 
 export const ALLOWED_USER = {
   id: Number(env.GITHUB_ALLOWED_USER_ID),
-  login: "jihoo12",
+  login: "allowed-user",
 };
 
 export const send = (path: string, init?: RequestInit) =>
