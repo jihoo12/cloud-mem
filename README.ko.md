@@ -2,7 +2,7 @@
 
 [English](README.md) | **한국어**
 
-Claude용 장기기억 MCP 서버입니다. 내 Cloudflare 계정의 Workers와 D1 위에서 돌아가므로, 한 기기의 Claude가 올린 작업 기록과 메모리를 다른 기기의 Claude가 바로 검색해 쓸 수 있습니다.
+Claude Code와 Codex용 장기기억 MCP 서버입니다. 내 Cloudflare 계정의 Workers와 D1 위에서 돌아가므로, 한 기기에서 올린 작업 기록과 메모리를 다른 기기에서 어느 쪽 에이전트로든 바로 검색해 쓸 수 있습니다.
 
 토큰을 복사할 필요 없이 GitHub로 로그인하고, 지정한 계정 하나만 접근할 수 있습니다.
 
@@ -75,6 +75,22 @@ claude mcp add --scope user --transport http cloud-mem \
 작업을 시작할 때 cloud-mem의 memory_search로 관련 기록을 찾고, 의미 있는 작업을 마치면 memory_save로 기록을 남긴다.
 ```
 
+## Codex에 연결
+
+기기마다 한 번씩 실행합니다. 로그인이 자동으로 시작되지 않으면 `codex mcp login cloud-mem`을 실행하세요.
+
+```sh
+codex mcp add cloud-mem --url https://cloud-mem.<내 서브도메인>.workers.dev/mcp
+```
+
+기기 이름을 기록하려면 `~/.codex/config.toml`의 `[mcp_servers.cloud-mem]` 아래에 다음 줄을 추가합니다.
+
+```toml
+http_headers = { "X-Device" = "my-laptop" }
+```
+
+Codex는 `memory_save`처럼 데이터를 바꾸는 도구를 쓰기 전에 승인을 요청합니다. 그래서 비대화형인 `codex exec`에서는 해당 도구의 승인을 따로 설정하지 않으면 검색만 되고 저장은 되지 않습니다. 더 확실하게 쓰게 하려면 위의 `CLAUDE.md` 문장을 `~/.codex/AGENTS.md`에도 추가하세요.
+
 ## 보안
 
 - **허용 계정:** `GITHUB_ALLOWED_USER_ID`와 숫자 ID가 일치하는 GitHub 계정만 통과합니다. 사용자명은 바뀔 수 있어서 비교에 쓰지 않습니다.
@@ -85,7 +101,7 @@ claude mcp add --scope user --transport http cloud-mem \
 ## 제한 사항
 
 - **사용자 한 명 전용:** 항목을 사용자별로 나누지 않습니다. 여러 명이 쓰려면 각자 따로 배포해야 합니다.
-- **자동 저장 아님:** Claude가 지침을 보고 스스로 도구를 호출하므로 빠뜨릴 수 있습니다.
+- **자동 저장 아님:** 에이전트가 스스로 도구를 호출하므로 빠뜨릴 수 있습니다.
 - **의미 검색 없음:** 글자가 일치해야 찾습니다. "로그인"으로 "인증"을 찾지는 못합니다.
 - **브라우저 필요:** SSH로만 접속하는 기기에서는 로그인이 번거롭습니다.
 - **복구 불가 삭제:** `memory_delete`는 되돌릴 수 없습니다. 복구가 필요하면 D1의 Time Travel 기능을 사용하세요.

@@ -2,7 +2,7 @@
 
 **English** | [한국어](README.ko.md)
 
-A long-term memory MCP server for Claude. It runs on Cloudflare Workers and D1 in your own account, so work logs and memories saved by Claude on one device can be searched by Claude on any other.
+A long-term memory MCP server for Claude Code and Codex. It runs on Cloudflare Workers and D1 in your own account, so work logs and memories saved on one device can be searched from any other, by either agent.
 
 You sign in with GitHub instead of copying tokens around, and only the one account you choose can get in.
 
@@ -75,6 +75,22 @@ The server sends Claude usage instructions when it connects. To make Claude use 
 When starting a task, use cloud-mem's memory_search to find related records. After finishing meaningful work, record it with memory_save.
 ```
 
+## Connect Codex
+
+Run this once on each device. If Codex doesn't start the sign-in on its own, run `codex mcp login cloud-mem`.
+
+```sh
+codex mcp add cloud-mem --url https://cloud-mem.<your-workers-subdomain>.workers.dev/mcp
+```
+
+To record the device name, add this line under `[mcp_servers.cloud-mem]` in `~/.codex/config.toml`:
+
+```toml
+http_headers = { "X-Device" = "my-laptop" }
+```
+
+Codex asks for approval before tools that change data, such as `memory_save`, so non-interactive `codex exec` runs can search but can't save unless you configure approval for those tools. To make Codex use the memory more reliably, add the `CLAUDE.md` line above to `~/.codex/AGENTS.md`.
+
 ## Security
 
 - **Allowed account:** Only the GitHub account whose numeric id matches `GITHUB_ALLOWED_USER_ID` gets in. Logins aren't compared, because they can be renamed.
@@ -85,7 +101,7 @@ When starting a task, use cloud-mem's memory_search to find related records. Aft
 ## Limitations
 
 - **One user:** Entries aren't separated by user. Each person needs their own deployment.
-- **Not automatic:** Claude decides when to call the tools, so it can miss things.
+- **Not automatic:** The agent decides when to call the tools, so it can miss things.
 - **No semantic search:** The characters have to match. Searching for "login" won't find "authentication".
 - **Browser required:** Signing in is awkward on a machine you only reach over SSH.
 - **Deletes are permanent:** `memory_delete` can't be undone. To recover data, use D1 Time Travel.
